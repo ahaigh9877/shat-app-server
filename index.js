@@ -16,40 +16,98 @@ app.use(jsonParser);
 
 // standin for a proper database. That's why it's defined at the top-level, in global scope.
 // re-created every time the server starts.
-const messages = [];
-
-app.get("/", (req, res, next) => {
-  res.send("FFFFUUUUUCCCCCKKKKK");
-});
-
-// Essentially a list of clients to which all data is sent.
+const messages = {};
+// The stream: essentially a list of clients to which all data is sent.
 const stream = new Sse();
+const streams = {};
+
+// * ============================================================================================== * //
 
 // This is what happens when a NEW client joins the stream. All the data are sent.
 app.get("/stream", (req, res, next) => {
+  // get a list of rooms
+  const rooms = Object.keys(messages);
   // serialise the data!!!
-  const string = JSON.stringify(messages);
+  const string = JSON.stringify(rooms);
   // add it to the stream...
   stream.updateInit(string);
   // then, this function adds the client to the stream. Stands in for res.send()
   stream.init(req, res);
 });
 
-// Post request, sending a message, storing it in the array and returning it as a response.
-app.post("/message", (req, res, next) => {
-  const { message } = req.body;
-  // turn message into a string
-  const string = JSON.stringify(message);
-  // send the thing
+// * ============================================================================================== * //
+
+app.get("/rooms.:roomName", (req, res, next) => {
+  const { roomName } = req.params;
+  const stream = streams[roomName];
+  // the array of messages from from a given roomName
+  const data = messages[roomName];
+  // serialise the data!!!
+  const string = JSON.stringify(data);
+  // add it to the stream...
+  stream.updateInit(string);
+  // then, this function adds the client to the stream. Stands in for res.send()
+  stream.init(req, res);
+});
+
+// * ============================================================================================== * //
+
+// function to keep code DRY
+function send(data) {
+  const string = JSON.stringify(data);
   stream.send(string);
-  messages.push(message);
+}
+
+// add new rooms endpoint
+app.post("/room", (req, res, next) => {
+  const { name } = req.body;
+
+  send(name);
+
+  // [] used here to add a DYNAMIC PROPERTY to an object. (remember [] is an alternative object property access means)
+  // a varable as property
+  messages[name] = [];
+
+  // add a new stream when a new room is created!!!
+  // It's added to the "streams" object
+  streams[name] = new Sse();
+
+  res.send(name);
+});
+
+// * ============================================================================================== * //
+
+// Post request, sending a message, storing it in the array and returning it as a response.
+app.post("/message/:roomName", (req, res, next) => {
+  const { message } = req.body;
+  const { roomName } = req.params;
+
+  const room = messages[roomName];
+
+  room.push(message);
+
+  // find the stream name in the streams dictionary
+  const stream = streams[roomName];
+
+  const string = JSON.stringify(message);
+
+  stream.send(string);
+
   // send a response so that the endpoint doesn't time out, even though it's not much actual use.
   // always send the response at the end.
   res.send(message);
 });
 
+// * ============================================================================================== * //
+
 app.get("/message", (req, res, next) => {
   res.send(messages);
+});
+
+// ** ================================= garbage below ============================================ ** //
+
+app.get("/", (req, res, next) => {
+  res.send("FFFFUUUUUCCCCCKKKKK");
 });
 
 app.listen(port, () =>
