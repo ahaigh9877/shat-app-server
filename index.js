@@ -37,9 +37,10 @@ app.get("/stream", (req, res, next) => {
 
 // * ============================================================================================== * //
 
-app.get("/rooms.:roomName", (req, res, next) => {
+app.get("/streams/:roomName", (req, res, next) => {
   const { roomName } = req.params;
   const stream = streams[roomName];
+  console.log("YES YES YES: ", stream, roomName);
   // the array of messages from from a given roomName
   const data = messages[roomName];
   // serialise the data!!!
