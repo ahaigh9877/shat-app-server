@@ -40,6 +40,7 @@ app.get("/stream", (req, res, next) => {
 app.get("/streams/:roomName", (req, res, next) => {
   const { roomName } = req.params;
   const stream = streams[roomName];
+  console.log("roomname", roomName);
 
   // the array of messages from from a given roomName
   const data = messages[roomName];
@@ -82,9 +83,13 @@ app.post("/room", (req, res, next) => {
 app.post("/message/:roomName", (req, res, next) => {
   const { message } = req.body;
   const { roomName } = req.params;
+  console.log("message: ", message);
+  console.log("Roomname ", roomName);
 
   // Use the room name to get the stream.
   const room = messages[roomName];
+  console.log("messages ", messages);
+  console.log("Room: ", room);
 
   room.push(message);
 
