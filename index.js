@@ -15,9 +15,9 @@ app.use(corsMiddleware);
 app.use(jsonParser);
 
 // standin for a proper database. That's why it's defined at the top-level, in global scope.
-// re-created every time the server starts.
+// re-created every time the server starts. A "dictionary".
 const messages = {};
-// The stream: essentially a list of clients to which all data is sent.
+// The stream: essentially a list of clients to which all data is sent. The list of rooms
 const stream = new Sse();
 const streams = {};
 
@@ -25,7 +25,7 @@ const streams = {};
 
 // This is what happens when a NEW client joins the stream. All the data are sent.
 app.get("/stream", (req, res, next) => {
-  // get a list of rooms
+  // get a list of rooms: the keys of the "messages" object.
   const rooms = Object.keys(messages);
   // serialise the data!!!
   const string = JSON.stringify(rooms);
@@ -40,7 +40,7 @@ app.get("/stream", (req, res, next) => {
 app.get("/streams/:roomName", (req, res, next) => {
   const { roomName } = req.params;
   const stream = streams[roomName];
-  console.log("YES YES YES: ", stream, roomName);
+
   // the array of messages from from a given roomName
   const data = messages[roomName];
   // serialise the data!!!
@@ -83,6 +83,7 @@ app.post("/message/:roomName", (req, res, next) => {
   const { message } = req.body;
   const { roomName } = req.params;
 
+  // Use the room name to get the stream.
   const room = messages[roomName];
 
   room.push(message);
