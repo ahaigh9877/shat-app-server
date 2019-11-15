@@ -33,7 +33,13 @@ app.get("/stream", (req, res, next) => {
 // Post request, sending a message, storing it in the array and returning it as a response.
 app.post("/message", (req, res, next) => {
   const { message } = req.body;
+  // turn message into a string
+  const string = JSON.stringify(message);
+  // send the thing
+  stream.send(string);
   messages.push(message);
+  // send a response so that the endpoint doesn't time out, even though it's not much actual use.
+  // always send the response at the end.
   res.send(message);
 });
 
