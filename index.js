@@ -1,5 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 // capitalised cos it's a class.
 const Sse = require("json-sse");
 
@@ -8,6 +9,9 @@ const port = 4000;
 
 // This is necessary to read the body of the request!!
 const jsonParser = bodyParser();
+const corsMiddleware = cors();
+// gotta register cors first!!!!
+app.use(corsMiddleware);
 app.use(jsonParser);
 
 // standin for a proper database. That's why it's defined at the top-level, in global scope.
@@ -21,6 +25,7 @@ app.get("/", (req, res, next) => {
 // Essentially a list of clients to which all data is sent.
 const stream = new Sse();
 
+// This is what happens when a NEW client joins the stream. All the data are sent.
 app.get("/stream", (req, res, next) => {
   // serialise the data!!!
   const string = JSON.stringify(messages);
