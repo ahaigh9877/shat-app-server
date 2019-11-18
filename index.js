@@ -27,6 +27,7 @@ const streams = {};
 app.get("/stream", (req, res, next) => {
   // get a list of rooms: the keys of the "messages" object.
   const rooms = Object.keys(messages);
+  console.log("get rooms: ", rooms);
   // serialise the data!!!
   const string = JSON.stringify(rooms);
   // add it to the stream...
@@ -40,12 +41,15 @@ app.get("/stream", (req, res, next) => {
 app.get("/streams/:roomName", (req, res, next) => {
   const { roomName } = req.params;
   const stream = streams[roomName];
-  console.log("roomname", roomName);
+  console.log("req., ", req.params);
+  console.log("streams, ", streams);
+  console.log("roomname ", roomName);
 
   // the array of messages from from a given roomName
   const data = messages[roomName];
   // serialise the data!!!
   const string = JSON.stringify(data);
+  console.log("S T R I N G ", string);
   // add it to the stream...
   stream.updateInit(string);
   // then, this function adds the client to the stream. Stands in for res.send()
